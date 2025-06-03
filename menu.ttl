@@ -1,0 +1,190 @@
+@prefix menu: <http://example.org/menu#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+menu:CheeseBurger a menu:FoodItem ;
+    menu:calories "650"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:BeefPatty,
+        menu:Bun,
+        menu:Cheese,
+        menu:Milk ;
+    menu:name "Cheese Burger" ;
+    menu:spicyLevel "2"^^xsd:int .
+
+menu:ChocolateIceCream a menu:FoodItem ;
+    menu:calories "300"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:Cocoa,
+        menu:Milk ;
+    menu:name "Chocolate Ice Cream" ;
+    menu:spicyLevel "0"^^xsd:int .
+
+menu:CurlyFries a menu:FoodItem ;
+    menu:calories "330"^^xsd:int ;
+    menu:dietTag menu:vegan ;
+    menu:hasIngredient menu:Oil,
+        menu:Potato ;
+    menu:name "Curly Fries" ;
+    menu:spicyLevel "1"^^xsd:int .
+
+menu:DoubleCheeseBurger a menu:FoodItem ;
+    menu:calories "800"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:Bun,
+        menu:Cheese,
+        menu:DoubleBeefPatty,
+        menu:Milk ;
+    menu:name "Double Cheese Burger" ;
+    menu:spicyLevel "3"^^xsd:int .
+
+menu:FrenchFries a menu:FoodItem ;
+    menu:calories "280"^^xsd:int ;
+    menu:dietTag menu:glutenFree,
+        menu:vegan ;
+    menu:hasIngredient menu:Potato,
+        menu:Salt ;
+    menu:name "French Fries" ;
+    menu:spicyLevel "1"^^xsd:int .
+
+menu:GreenSalad a menu:FoodItem ;
+    menu:calories "120"^^xsd:int ;
+    menu:dietTag menu:glutenFree,
+        menu:vegan ;
+    menu:hasIngredient menu:Cucumber,
+        menu:Lettuce,
+        menu:Tomato ;
+    menu:name "Green Salad" ;
+    menu:spicyLevel "0"^^xsd:int .
+
+menu:HawaiianPizza a menu:FoodItem ;
+    menu:calories "700"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:Cheese,
+        menu:Dough,
+        menu:Ham,
+        menu:Milk,
+        menu:Pineapple ;
+    menu:name "Hawaiian Pizza" ;
+    menu:spicyLevel "2"^^xsd:int .
+
+menu:PeperoniPizza a menu:FoodItem ;
+    menu:calories "750"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:Cheese,
+        menu:Dough,
+        menu:Milk,
+        menu:Pepperoni ;
+    menu:name "Peperoni Pizza" ;
+    menu:spicyLevel "3"^^xsd:int .
+
+menu:PlainBurger a menu:FoodItem ;
+    menu:calories "600"^^xsd:int ;
+    menu:hasIngredient menu:BeefPatty,
+        menu:Bun ;
+    menu:name "Plain Burger" ;
+    menu:spicyLevel "1"^^xsd:int .
+
+menu:SpicyBurger a menu:FoodItem ;
+    menu:calories "620"^^xsd:int ;
+    menu:hasIngredient menu:BeefPatty,
+        menu:Bun,
+        menu:Chili ;
+    menu:name "Spicy Burger" ;
+    menu:spicyLevel "5"^^xsd:int .
+
+menu:StrawberryIceCream a menu:FoodItem ;
+    menu:calories "290"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:Milk,
+        menu:Strawberry ;
+    menu:name "Strawberry Ice Cream" ;
+    menu:spicyLevel "0"^^xsd:int .
+
+menu:TwinklerFries a menu:FoodItem ;
+    menu:calories "320"^^xsd:int ;
+    menu:dietTag menu:vegan ;
+    menu:hasIngredient menu:Potato,
+        menu:Seasoning ;
+    menu:name "Twinkler Fries" ;
+    menu:spicyLevel "2"^^xsd:int .
+
+menu:VanillaIceCream a menu:FoodItem ;
+    menu:calories "280"^^xsd:int ;
+    menu:dietTag menu:containsDairy ;
+    menu:hasIngredient menu:Milk,
+        menu:Vanilla ;
+    menu:name "Vanilla Ice Cream" ;
+    menu:spicyLevel "0"^^xsd:int .
+
+menu:VeganBurger a menu:FoodItem ;
+    menu:calories "400"^^xsd:int ;
+    menu:dietTag menu:glutenFree,
+        menu:vegan ;
+    menu:hasIngredient menu:Bun,
+        menu:Lettuce,
+        menu:VegPatty ;
+    menu:name "Vegan Burger" ;
+    menu:spicyLevel "1"^^xsd:int .
+
+menu:VeganPizza a menu:FoodItem ;
+    menu:calories "500"^^xsd:int ;
+    menu:dietTag menu:vegan ;
+    menu:hasIngredient menu:Dough,
+        menu:Tomato,
+        menu:VegCheese ;
+    menu:name "Vegan Pizza" ;
+    menu:spicyLevel "2"^^xsd:int .
+
+menu:Chili a menu:Ingredient .
+
+menu:Cocoa a menu:Ingredient .
+
+menu:Corn a menu:FoodItem,
+        menu:Ingredient ;
+    menu:calories "90"^^xsd:int ;
+    menu:dietTag menu:glutenFree,
+        menu:vegan ;
+    menu:hasIngredient menu:Corn ;
+    menu:name "Corn" ;
+    menu:spicyLevel "0"^^xsd:int .
+
+menu:Cucumber a menu:Ingredient .
+
+menu:DoubleBeefPatty a menu:Ingredient .
+
+menu:Ham a menu:Ingredient .
+
+menu:Oil a menu:Ingredient .
+
+menu:Pepperoni a menu:Ingredient .
+
+menu:Pineapple a menu:Ingredient .
+
+menu:Salt a menu:Ingredient .
+
+menu:Seasoning a menu:Ingredient .
+
+menu:Strawberry a menu:Ingredient .
+
+menu:Vanilla a menu:Ingredient .
+
+menu:VegCheese a menu:Ingredient .
+
+menu:VegPatty a menu:Ingredient .
+
+menu:Lettuce a menu:Ingredient .
+
+menu:Tomato a menu:Ingredient .
+
+menu:BeefPatty a menu:Ingredient .
+
+menu:Dough a menu:Ingredient .
+
+menu:Potato a menu:Ingredient .
+
+menu:Cheese a menu:Ingredient .
+
+menu:Bun a menu:Ingredient .
+
+menu:Milk a menu:Ingredient .
+

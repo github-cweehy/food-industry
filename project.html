@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fast Food Selector</title>
+  <script src="https://cdn.jsdelivr.net/npm/rdflib/dist/rdflib.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <header>Fast Food Selector</header>
+  <div class="container">
+    <div class="section">
+      <label for="profile">Choose your dietary profile:</label>
+      <select id="profile">
+        <option value="none">None</option>
+        <option value="vegan">Vegan</option>
+        <option value="lactoseIntolerant">Lactose Intolerant</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <h2>Search & Filter</h2>
+      <input type="text" id="searchInput" placeholder="Search for food..." oninput="searchMenuItems()" />
+      <div class="filter-group">
+        <label><input type="checkbox" id="filterGlutenFree" onchange="searchMenuItems()" /> Gluten-Free</label>
+        <label><input type="checkbox" id="filterVegan" onchange="searchMenuItems()" /> Vegan</label>
+        <label><input type="checkbox" id="filterLowCal" onchange="searchMenuItems()" /> Under 300 Calories</label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div id="menu-list" class="menu-grid"></div>
+    </div>
+
+    <div class="section">
+      <h2>Order</h2>
+      <button onclick="validateOrder()">Validate Order</button>
+      <p id="validation-result"></p>
+    </div>
+  </div>
+
+  <script>
+    const store = $rdf.graph();
+    const fetcher = new $rdf.Fetcher(store, { fetch: window.fetch.bind(window) });
+    const menuURL = new URL("menu.ttl", window.location.href).href;
+
+    const ns = $rdf.Namespace("http://example.org/menu#");
+    const RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+
+    const menuList = document.getElementById("menu-list");
+    const resultEl = document.getElementById("validation-result");
+    let selectedItems = [];
+    let allItems = [];
+
+    fetcher.load(menuURL).then(() => {
+      allItems = store.each(undefined, RDF("type"), ns("FoodItem"));
+    });
+
+    function renderMenu(items) {
+      menuList.innerHTML = "";
+      selectedItems = [];
+      items.forEach(item => {
+        const name = store.any(item, ns("name"));
+        const ingredients = store.each(item, ns("hasIngredient"));
+        const cal = store.any(item, ns("calories"));
+        const spice = store.any(item, ns("spicyLevel"));
+        const tags = store.each(item, ns("dietTag"));
+        const hasCheese = store.any(item, ns("hasIngredient"), ns("Cheese"));
+
+        const ingText = ingredients.map(i => i.value.split("#")[1]).join(", ");
+        const fileName = name?.value.toLowerCase().replace(/ /g, "").replace(/[^a-z0-9]/g, "") + ".jpg";
+        const imageUrl = `image/${fileName}`;
+
+        const iconTags = tags.map(t => {
+          if (t.value.endsWith("vegan")) return "🥦";
+          if (t.value.endsWith("containsDairy")) return "🥛";
+          if (t.value.endsWith("glutenFree")) return "✅";
+          return "";
+        }).join(" ");
+        if (spice && parseInt(spice.value) > 3) iconTags += " 🌶️";
+
+        const card = document.createElement("div");
+        card.className = "menu-card";
+        card.innerHTML = `
+          <img src="${imageUrl}" alt="${name?.value}" onerror="this.src='image/default.jpg'" />
+          <h3>${name?.value}</h3>
+          <p><strong>Calories:</strong> ${cal?.value}</p>
+          <p><strong>Spicy Level:</strong> ${spice?.value} ${iconTags}</p>
+          <p><strong>Ingredients:</strong> ${ingText}</p>
+          <label><input type="checkbox" value="${item.value}" onchange="toggleSelect(this, '${item.value}')"> Select</label>
+        `;
+        menuList.appendChild(card);
+      });
+      if (items.length > 0) {
+        menuList.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function toggleSelect(checkbox, uri) {
+        const item = $rdf.sym(uri);
+        const hasCheese = store.any(item, ns("hasIngredient"), ns("Cheese"));
+        const hasMilk = store.any(item, ns("hasIngredient"), ns("Milk"));
+        const selectedIndex = selectedItems.findIndex(i => i.uri === uri);
+
+        if (checkbox.checked && selectedIndex === -1) {
+            selectedItems.push({ uri, hasCheese, hasMilk });
+        } else if (!checkbox.checked && selectedIndex !== -1) {
+            selectedItems.splice(selectedIndex, 1);
+        }
+    }
+
+    function validateOrder() {
+        const profile = document.getElementById("profile").value;
+        let warnings = [];
+
+        if (profile === "lactoseIntolerant") {
+            selectedItems.forEach(item => {
+            if (item.hasCheese || item.hasMilk) {
+                const name = store.any($rdf.sym(item.uri), ns("name"))?.value || item.uri.split("#")[1];
+                warnings.push("❌ " + name + " contains milk or cheese.");
+            }
+            });
+        }
+
+        if (warnings.length > 0) {
+            resultEl.innerHTML = '<span class="warning">' + warnings.join("<br>") + '</span>';
+        } else {
+            resultEl.innerHTML = '<span style="color:green; font-weight:bold">✅ Order is valid.</span>';
+        }
+    }
+
+    function searchMenuItems() {
+      const searchText = document.getElementById("searchInput").value.toLowerCase();
+      const glutenFree = document.getElementById("filterGlutenFree").checked;
+      const vegan = document.getElementById("filterVegan").checked;
+      const lowCal = document.getElementById("filterLowCal").checked;
+
+      const filtered = allItems.filter(item => {
+        const name = store.any(item, ns("name"))?.value.toLowerCase();
+        const tags = store.each(item, ns("dietTag"));
+        const cal = store.any(item, ns("calories"));
+        if (searchText && !name.includes(searchText)) return false;
+        if (glutenFree && !tags.some(t => t.value.endsWith("glutenFree"))) return false;
+        if (vegan && !tags.some(t => t.value.endsWith("vegan"))) return false;
+        if (lowCal && parseInt(cal?.value || "1000") >= 300) return false;
+        return true;
+      });
+
+      renderMenu(filtered);
+    }
+  </script>
+</body>
+</html>
