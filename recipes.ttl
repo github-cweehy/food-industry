@@ -1,0 +1,37 @@
+@prefix : <http://example.org/recipe#> .
+@prefix food: <http://purl.org/foodontology#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+:AmericanBurger a food:Recipe ;
+    food:hasCuisine "American" ;
+    food:hasIngredient :Beef, :Bun, :Lettuce ;
+    food:hasCalories "550"^^xsd:integer ;
+    food:isVegan false ;
+    food:hasDifficulty "Medium" .
+
+:VeganSalad a food:Recipe ;
+    food:hasCuisine "French" ;
+    food:hasIngredient :Lettuce, :Tomato, :OliveOil ;
+    food:hasCalories "180"^^xsd:integer ;
+    food:isVegan true ;
+    food:hasDifficulty "Easy" .
+
+:Beef a food:Meat .
+:Bun a food:Grain .
+:Lettuce a food:Vegetable .
+:Tomato a food:Vegetable .
+:OliveOil a food:Oil .
+
+# OWL class axiom: infer VeganRecipe
+:VeganRecipe a owl:Class ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            food:Recipe
+            [ a owl:Restriction ;
+              owl:onProperty food:isVegan ;
+              owl:hasValue true ]
+        )
+    ] .
