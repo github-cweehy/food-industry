@@ -2,17 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fast Food Selector</title>
+  <title>Fast Food</title>
   <script src="https://cdn.jsdelivr.net/npm/rdflib/dist/rdflib.min.js"></script>
   <link rel="stylesheet" href="style.css">
 
 </head>
 <body>
-  <header>Fast Food Selector</header>
+  <header>Fast Food</header>
+  <section class="intro">
+    <h1>Welcome to Fast Food!</h1>
+    <p>
+      Discover a curated menu of delicious food items tailored to your dietary preferences.
+      Whether you're vegan 🌱, lactose-intolerant 🥛, or just hungry 🍔, we've got something for you.
+      Use the filters below to find your perfect meal!
+    </p>
+  </section>
+
+  <section class="icon-legend">
+    <h3>What Do the Icons Mean?</h3>
+    <ul>
+      <li><span class="icon">🌶️</span> Spiciness level (1–5)</li>
+      <li><span class="icon">🥛</span> Contains dairy</li>
+      <li><span class="icon">🥦</span> Vegan-friendly</li>
+    </ul>
+  </section>
+
   <div class="container">
     <div class="section">
       <label for="profile">Choose your dietary profile:</label>
-      <select id="profile">
+      <select id="profile" onchange="showRecommendations()">
         <option value="none">None</option>
         <option value="vegan">Vegan</option>
         <option value="lactoseIntolerant">Lactose Intolerant</option>
@@ -34,9 +52,16 @@
     </div>
 
     <div class="section">
+      <h2>Recommended For You</h2>
+      <div id="recommendation-list" class="menu-grid"></div>
+    </div>
+
+    <div class="section">
       <h2>Order</h2>
-      <button onclick="validateOrder()">Validate Order</button>
-      <p id="validation-result"></p>
+      <div class="order-row">
+        <button onclick="validateOrder()">✅ Validate Order</button>
+        <p id="validation-result"></p>
+      </div>
     </div>
   </div>
 
@@ -55,11 +80,12 @@
 
     fetcher.load(menuURL).then(() => {
       allItems = store.each(undefined, RDF("type"), ns("FoodItem"));
+      showRecommendations();
     });
 
     function renderMenu(items) {
       menuList.innerHTML = "";
-      selectedItems = [];
+
       items.forEach(item => {
         const name = store.any(item, ns("name"));
         const ingredients = store.each(item, ns("hasIngredient"));
@@ -72,22 +98,26 @@
         const fileName = name?.value.toLowerCase().replace(/ /g, "").replace(/[^a-z0-9]/g, "") + ".jpg";
         const imageUrl = `image/${fileName}`;
 
-        const iconTags = tags.map(t => {
-          if (t.value.endsWith("vegan")) return "🥦";
-          if (t.value.endsWith("containsDairy")) return "🥛";
-          if (t.value.endsWith("glutenFree")) return "✅";
-          return "";
-        }).join(" ");
-        if (spice && parseInt(spice.value) > 3) iconTags += " 🌶️";
+        let iconTagsArr = [];
 
+        if (spice && parseInt(spice.value) > 0) {
+          const level = Math.min(parseInt(spice.value), 5);
+          iconTagsArr.push("🌶️".repeat(level));
+        }
+        if (tags.some(t => t.value.endsWith("containsDairy"))) iconTagsArr.push("🥛");
+        if (tags.some(t => t.value.endsWith("vegan"))) iconTagsArr.push("🥦");
+
+        const iconTags = iconTagsArr.join(" ");
+
+        
         const card = document.createElement("div");
         card.className = "menu-card";
         card.innerHTML = `
           <img src="${imageUrl}" alt="${name?.value}" onerror="this.src='image/default.jpg'" />
           <h3>${name?.value}</h3>
           <p><strong>Calories:</strong> ${cal?.value}</p>
-          <p><strong>Spicy Level:</strong> ${spice?.value} ${iconTags}</p>
-          <p><strong>Ingredients:</strong> ${ingText}</p>
+          <p class="icon-badge-row">${iconTags}</p>
+          <p class="ingredient-list"><strong>Ingredients:</strong> ${ingText}</p>
           <label><input type="checkbox" value="${item.value}" onchange="toggleSelect(this, '${item.value}')"> Select</label>
         `;
         menuList.appendChild(card);
@@ -116,10 +146,14 @@
 
         if (profile === "lactoseIntolerant") {
             selectedItems.forEach(item => {
-            if (item.hasCheese || item.hasMilk) {
-                const name = store.any($rdf.sym(item.uri), ns("name"))?.value || item.uri.split("#")[1];
+              const sym = $rdf.sym(item.uri);
+              const hasCheese = store.any(sym, ns("hasIngredient"), ns("Cheese"));
+              const hasMilk = store.any(sym, ns("hasIngredient"), ns("Milk"));
+
+              if (hasCheese || hasMilk) {
+                const name = store.any(sym, ns("name"))?.value || item.uri.split("#")[1];
                 warnings.push("❌ " + name + " contains milk or cheese.");
-            }
+              }
             });
         }
 
@@ -131,24 +165,97 @@
     }
 
     function searchMenuItems() {
-      const searchText = document.getElementById("searchInput").value.toLowerCase();
+      const searchText = document.getElementById("searchInput").value.toLowerCase().trim();
       const glutenFree = document.getElementById("filterGlutenFree").checked;
       const vegan = document.getElementById("filterVegan").checked;
       const lowCal = document.getElementById("filterLowCal").checked;
 
+      // If nothing typed and no filters checked, clear results
+      if (!searchText && !glutenFree && !vegan && !lowCal) {
+        renderMenu([]);
+        return;
+      }
+
       const filtered = allItems.filter(item => {
-        const name = store.any(item, ns("name"))?.value.toLowerCase();
+        const nameNode = store.any(item, ns("name"));
+        const name = nameNode ? nameNode.value.toLowerCase() : "";
         const tags = store.each(item, ns("dietTag"));
         const cal = store.any(item, ns("calories"));
-        if (searchText && !name.includes(searchText)) return false;
+
+        // searchText: match name
+        if (searchText && (!name || !name.includes(searchText))) return false;
+
+        // Filters: match if they are checked
         if (glutenFree && !tags.some(t => t.value.endsWith("glutenFree"))) return false;
         if (vegan && !tags.some(t => t.value.endsWith("vegan"))) return false;
         if (lowCal && parseInt(cal?.value || "1000") >= 300) return false;
+
         return true;
       });
 
       renderMenu(filtered);
     }
+
+    function showRecommendations() {
+      const profile = document.getElementById("profile").value;
+
+      const recommendedItems = allItems.filter(item => {
+        const tags = store.each(item, ns("dietTag"));
+        if (profile === "vegan") {
+          return tags.some(t => t.value.endsWith("vegan"));
+        }
+        if (profile === "lactoseIntolerant") {
+          return !tags.some(t => t.value.endsWith("containsDairy"));
+        }
+        return true;
+      });
+
+      renderRecommendations(recommendedItems);
+    }
+
+    function renderRecommendations(items) {
+      const recList = document.getElementById("recommendation-list");
+      recList.innerHTML = "";
+
+      // Shuffle and pick 3 random items
+      const shuffled = items.sort(() => 0.5 - Math.random()).slice(0, 4);
+
+      shuffled.forEach(item => {
+        const name = store.any(item, ns("name"));
+        const ingredients = store.each(item, ns("hasIngredient"));
+        const cal = store.any(item, ns("calories"));
+        const spice = store.any(item, ns("spicyLevel"));
+        const tags = store.each(item, ns("dietTag"));
+
+        const ingText = ingredients.map(i => i.value.split("#")[1]).join(", ");
+        const fileName = name?.value.toLowerCase().replace(/ /g, "").replace(/[^a-z0-9]/g, "") + ".jpg";
+        const imageUrl = `image/${fileName}`;
+
+        let iconTags = tags.map(t => {
+          if (t.value.endsWith("vegan")) return "🥦";
+          if (t.value.endsWith("containsDairy")) return "🥛";
+          if (t.value.endsWith("glutenFree")) return "✅";
+          return "";
+        }).join(" ");
+        if (spice && parseInt(spice.value) > 3) iconTags += " 🌶️";
+
+        const card = document.createElement("div");
+        card.className = "menu-card";
+        card.innerHTML = `
+          <img src="${imageUrl}" alt="${name?.value}" onerror="this.src='image/default.jpg'" />
+          <h3>${name?.value}</h3>
+          <p><strong>Calories:</strong> ${cal?.value}</p>
+          <p class="spicy-badge">
+            🌶️ ${spice?.value} &nbsp; ${iconTags}
+          </p>
+          <p class="ingredient-list"><strong>Ingredients:</strong> ${ingText}</p>
+        `;
+        recList.appendChild(card);
+      });
+    }
+
+
+
   </script>
 </body>
 </html>

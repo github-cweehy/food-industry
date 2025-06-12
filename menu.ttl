@@ -1,3 +1,4 @@
+
 @prefix menu: <http://example.org/menu#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -136,55 +137,31 @@ menu:VeganPizza a menu:FoodItem ;
     menu:spicyLevel "2"^^xsd:int .
 
 menu:Chili a menu:Ingredient .
-
 menu:Cocoa a menu:Ingredient .
-
-menu:Corn a menu:FoodItem,
-        menu:Ingredient ;
+menu:Corn a menu:FoodItem, menu:Ingredient ;
     menu:calories "90"^^xsd:int ;
-    menu:dietTag menu:glutenFree,
-        menu:vegan ;
+    menu:dietTag menu:glutenFree, menu:vegan ;
     menu:hasIngredient menu:Corn ;
     menu:name "Corn" ;
     menu:spicyLevel "0"^^xsd:int .
 
 menu:Cucumber a menu:Ingredient .
-
 menu:DoubleBeefPatty a menu:Ingredient .
-
 menu:Ham a menu:Ingredient .
-
 menu:Oil a menu:Ingredient .
-
 menu:Pepperoni a menu:Ingredient .
-
 menu:Pineapple a menu:Ingredient .
-
 menu:Salt a menu:Ingredient .
-
 menu:Seasoning a menu:Ingredient .
-
 menu:Strawberry a menu:Ingredient .
-
 menu:Vanilla a menu:Ingredient .
-
 menu:VegCheese a menu:Ingredient .
-
 menu:VegPatty a menu:Ingredient .
-
 menu:Lettuce a menu:Ingredient .
-
 menu:Tomato a menu:Ingredient .
-
 menu:BeefPatty a menu:Ingredient .
-
 menu:Dough a menu:Ingredient .
-
 menu:Potato a menu:Ingredient .
-
 menu:Cheese a menu:Ingredient .
-
 menu:Bun a menu:Ingredient .
-
 menu:Milk a menu:Ingredient .
-
