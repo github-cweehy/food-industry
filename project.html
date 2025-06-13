@@ -38,13 +38,17 @@
     </div>
 
     <div class="section">
-      <h2>Filter Your Menu Items</h2>
+      <h2>Search Your Menu Items</h2>
+      <input type="text" id="searchInput" placeholder="Search for food..." oninput="searchMenuItems()" />
+    </div>
+
+    <div class="section">
+      <h2><br>Filter Your Menu Items</h2>
       <button onclick="showVeganItems()">🌱 List Vegan Items</button>
       <button onclick="showLowCalItems()">🔥 Under 300 Calories</button>
       <button onclick="showDairyFreeItems()">🥛 No Dairy Items</button>
     </div>
-
-
+    
     <div class="section">
       <div id="menu-list" class="menu-grid"></div>
     </div>
@@ -73,7 +77,6 @@
 
     const menuList = document.getElementById("menu-list");
     const resultEl = document.getElementById("validation-result");
-    
     let selectedItems = [];
     let allItems = [];
 
@@ -122,7 +125,7 @@
         menuList.appendChild(card);
       });
       if (items.length > 0) {
-        menuList.scrollIntoView({ behavior: 'smooth' });
+        menuList.scrollIntoView({ behavior: 'none' });
       }
     }
 
@@ -165,12 +168,8 @@
 
     function searchMenuItems() {
       const searchText = document.getElementById("searchInput").value.toLowerCase().trim();
-      const glutenFree = document.getElementById("filterGlutenFree").checked;
-      const vegan = document.getElementById("filterVegan").checked;
-      const lowCal = document.getElementById("filterLowCal").checked;
 
-      // If nothing typed and no filters checked, clear results
-      if (!searchText && !glutenFree && !vegan && !lowCal) {
+      if (!searchText) {
         renderMenu([]);
         return;
       }
@@ -178,18 +177,7 @@
       const filtered = allItems.filter(item => {
         const nameNode = store.any(item, ns("name"));
         const name = nameNode ? nameNode.value.toLowerCase() : "";
-        const tags = store.each(item, ns("dietTag"));
-        const cal = store.any(item, ns("calories"));
-
-        // searchText: match name
-        if (searchText && (!name || !name.includes(searchText))) return false;
-
-        // Filters: match if they are checked
-        if (glutenFree && !tags.some(t => t.value.endsWith("glutenFree"))) return false;
-        if (vegan && !tags.some(t => t.value.endsWith("vegan"))) return false;
-        if (lowCal && parseInt(cal?.value || "1000") >= 300) return false;
-
-        return true;
+        return name.includes(searchText);
       });
 
       renderMenu(filtered);
