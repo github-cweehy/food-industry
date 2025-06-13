@@ -46,7 +46,7 @@ menu:DoubleCheeseBurger a menu:FoodItem ;
     menu:dietTag menu:containsDairy ;
     menu:hasIngredient menu:Bun,
         menu:Cheese,
-        menu:DoubleBeefPatty,
+        menu:BeefPatty,
         menu:Milk ;
     menu:name "Double Cheese Burger" ;
     menu:spicyLevel "3"^^xsd:int .

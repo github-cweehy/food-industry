@@ -131,8 +131,8 @@
 
     function toggleSelect(checkbox, uri) {
         const item = $rdf.sym(uri);
-        const hasCheese = store.any(item, ns("hasIngredient"), ns("Cheese"));
-        const hasMilk = store.any(item, ns("hasIngredient"), ns("Milk"));
+        const hasCheese = !!store.any(item, ns("hasIngredient"), ns("Cheese"));
+        const hasMilk = !!store.any(item, ns("hasIngredient"), ns("Milk"));
         const selectedIndex = selectedItems.findIndex(i => i.uri === uri);
 
         if (checkbox.checked && selectedIndex === -1) {
@@ -146,24 +146,37 @@
         const profile = document.getElementById("profile").value;
         let warnings = [];
 
-        if (profile === "lactoseIntolerant") {
-            selectedItems.forEach(item => {
-              const sym = $rdf.sym(item.uri);
-              const hasCheese = store.any(sym, ns("hasIngredient"), ns("Cheese"));
-              const hasMilk = store.any(sym, ns("hasIngredient"), ns("Milk"));
+        selectedItems.forEach(item => {
+            const sym = $rdf.sym(item.uri);
+            const ingredients = store.each(sym, ns("hasIngredient"));
+            const name = store.any(sym, ns("name"))?.value || item.uri.split("#")[1];
 
-              if (hasCheese || hasMilk) {
-                const name = store.any(sym, ns("name"))?.value || item.uri.split("#")[1];
+            const hasMilk = ingredients.some(i => i.equals(ns("Milk")));
+            const hasCheese = ingredients.some(i => i.equals(ns("Cheese")));
+            const hasEgg = ingredients.some(i => i.equals(ns("Egg")));
+            const hasBeef = ingredients.some(i => i.equals(ns("BeefPatty")));
+            const hasChicken = ingredients.some(i => i.equals(ns("Chicken")));
+            const hasFish = ingredients.some(i => i.equals(ns("Fish")));
+
+            if (profile === "lactoseIntolerant" && (hasMilk || hasCheese)) {
                 warnings.push("❌ " + name + " contains milk or cheese.");
-              }
-            });
-        }
+            }
+
+            if (profile === "vegan" && (hasEgg || hasBeef || hasChicken || hasFish)) {
+                warnings.push("❌ " + name + " is not vegan-friendly (contains animal-based ingredients).");
+            }
+
+            console.log("Checking:", name, "| Milk:", hasMilk, "| Cheese:", hasCheese, "| Egg:", hasEgg, "| Beef:", hasBeef, "| Chicken:", hasChicken, "| Fish:", hasFish);
+        });
+        
+        resultEl.innerHTML = ""; // Clear previous content
 
         if (warnings.length > 0) {
             resultEl.innerHTML = '<span class="warning">' + warnings.join("<br>") + '</span>';
         } else {
             resultEl.innerHTML = '<span style="color:green; font-weight:bold">✅ Order is valid.</span>';
         }
+
     }
 
     function searchMenuItems() {
