@@ -38,14 +38,12 @@
     </div>
 
     <div class="section">
-      <h2>Search & Filter</h2>
-      <input type="text" id="searchInput" placeholder="Search for food..." oninput="searchMenuItems()" />
-      <div class="filter-group">
-        <label><input type="checkbox" id="filterGlutenFree" onchange="searchMenuItems()" /> Gluten-Free</label>
-        <label><input type="checkbox" id="filterVegan" onchange="searchMenuItems()" /> Vegan</label>
-        <label><input type="checkbox" id="filterLowCal" onchange="searchMenuItems()" /> Under 300 Calories</label>
-      </div>
+      <h2>Filter Your Menu Items</h2>
+      <button onclick="showVeganItems()">🌱 List Vegan Items</button>
+      <button onclick="showLowCalItems()">🔥 Under 300 Calories</button>
+      <button onclick="showDairyFreeItems()">🥛 No Dairy Items</button>
     </div>
+
 
     <div class="section">
       <div id="menu-list" class="menu-grid"></div>
@@ -75,6 +73,7 @@
 
     const menuList = document.getElementById("menu-list");
     const resultEl = document.getElementById("validation-result");
+    
     let selectedItems = [];
     let allItems = [];
 
@@ -254,6 +253,70 @@
       });
     }
 
+    function runSPARQL(queryStr, callback) {
+      const query = $rdf.SPARQLToQuery(queryStr, false, store);
+      const results = [];
+      store.query(query, result => {
+        results.push(result);
+      }, undefined, () => {
+        callback(results);
+      });
+    }
+
+    function showVeganItems() {
+      const q = `
+        PREFIX menu: <http://example.org/menu#>
+        SELECT ?item ?name
+        WHERE {
+          ?item a menu:FoodItem ;
+                menu:name ?name ;
+                menu:dietTag menu:vegan .
+        }
+      `;
+      runSPARQL(q, results => {
+        const items = results.map(r => $rdf.sym(r['?item'].value));
+        renderMenu(items);
+      });
+    }
+
+    function showLowCalItems() {
+      const q = `
+        PREFIX menu: <http://example.org/menu#>
+        SELECT ?item ?name ?calories
+        WHERE {
+          ?item a menu:FoodItem ;
+                menu:name ?name ;
+                menu:calories ?calories .
+        }
+      `;
+      runSPARQL(q, results => {
+        const items = results
+          .filter(r => parseInt(r['?calories'].value) <= 300)
+          .map(r => $rdf.sym(r['?item'].value));
+        renderMenu(items);
+      });
+    }
+
+    function showDairyFreeItems() {
+      const q = `
+        PREFIX menu: <http://example.org/menu#>
+        SELECT ?item ?name
+        WHERE {
+          ?item a menu:FoodItem ;
+                menu:name ?name .
+        }
+      `;
+      runSPARQL(q, results => {
+        const items = results
+          .filter(r => {
+            const subject = $rdf.sym(r['?item'].value);
+            const tags = store.each(subject, ns("dietTag"));
+            return !tags.some(t => t.equals(ns("containsDairy")));
+          })
+          .map(r => $rdf.sym(r['?item'].value));
+        renderMenu(items);
+      });
+    }
 
 
   </script>

@@ -1,6 +1,19 @@
-
 @prefix menu: <http://example.org/menu#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+menu:DietTag a rdfs:Class ;
+    rdfs:label "Diet Tag" ;
+    rdfs:comment "Describes dietary suitability such as vegan or dairy-containing." .
+
+menu:FoodItem a rdfs:Class ;
+    rdfs:label "Food Item" ;
+    rdfs:comment "A menu item that can be ordered." .
+
+menu:Ingredient a rdfs:Class ;
+    rdfs:label "Ingredient" ;
+    rdfs:comment "A single component or substance used in food items." .
 
 menu:CheeseBurger a menu:FoodItem ;
     menu:calories "650"^^xsd:int ;
@@ -136,32 +149,98 @@ menu:VeganPizza a menu:FoodItem ;
     menu:name "Vegan Pizza" ;
     menu:spicyLevel "2"^^xsd:int .
 
+menu:calories a rdf:Property ;
+    rdfs:label "calories" ;
+    rdfs:comment "The number of calories in the food item." ;
+    rdfs:domain menu:FoodItem ;
+    rdfs:range xsd:int .
+
+menu:dietTag a rdf:Property ;
+    rdfs:label "diet tag" ;
+    rdfs:comment "Defines dietary properties of the food item." ;
+    rdfs:domain menu:FoodItem ;
+    rdfs:range menu:DietTag .
+
+menu:hasIngredient a rdf:Property ;
+    rdfs:label "has ingredient" ;
+    rdfs:comment "Specifies what ingredients the food item includes." ;
+    rdfs:domain menu:FoodItem ;
+    rdfs:range menu:Ingredient .
+
+menu:name a rdf:Property ;
+    rdfs:label "name" ;
+    rdfs:comment "Name of the food item." ;
+    rdfs:domain menu:FoodItem ;
+    rdfs:range xsd:string .
+
+menu:spicyLevel a rdf:Property ;
+    rdfs:label "spicy level" ;
+    rdfs:comment "A value from 0 to 5 representing how spicy the item is." ;
+    rdfs:domain menu:FoodItem ;
+    rdfs:range xsd:int .
+
 menu:Chili a menu:Ingredient .
+
 menu:Cocoa a menu:Ingredient .
-menu:Corn a menu:FoodItem, menu:Ingredient ;
+
+menu:Corn a menu:FoodItem,
+        menu:Ingredient ;
     menu:calories "90"^^xsd:int ;
-    menu:dietTag menu:glutenFree, menu:vegan ;
+    menu:dietTag menu:glutenFree,
+        menu:vegan ;
     menu:hasIngredient menu:Corn ;
     menu:name "Corn" ;
     menu:spicyLevel "0"^^xsd:int .
 
 menu:Cucumber a menu:Ingredient .
+
 menu:DoubleBeefPatty a menu:Ingredient .
+
 menu:Ham a menu:Ingredient .
+
 menu:Oil a menu:Ingredient .
+
 menu:Pepperoni a menu:Ingredient .
+
 menu:Pineapple a menu:Ingredient .
+
 menu:Salt a menu:Ingredient .
+
 menu:Seasoning a menu:Ingredient .
+
 menu:Strawberry a menu:Ingredient .
+
 menu:Vanilla a menu:Ingredient .
+
 menu:VegCheese a menu:Ingredient .
+
 menu:VegPatty a menu:Ingredient .
+
 menu:Lettuce a menu:Ingredient .
+
 menu:Tomato a menu:Ingredient .
+
 menu:BeefPatty a menu:Ingredient .
+
 menu:Dough a menu:Ingredient .
+
 menu:Potato a menu:Ingredient .
+
 menu:Cheese a menu:Ingredient .
+
+menu:glutenFree a menu:DietTag ;
+    rdfs:label "Gluten-Free" ;
+    rdfs:comment "Item does not contain gluten." .
+
 menu:Bun a menu:Ingredient .
+
 menu:Milk a menu:Ingredient .
+
+menu:containsDairy a menu:DietTag ;
+    rdfs:label "Contains Dairy" ;
+    rdfs:comment "Item contains dairy ingredients like milk or cheese." .
+
+menu:vegan a menu:DietTag ;
+    rdfs:label "Vegan" ;
+    rdfs:comment "Suitable for vegan diets." .
+
