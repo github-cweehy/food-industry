@@ -8,67 +8,103 @@
 
 </head>
 <body>
-  <header>Fast Food</header>
-  <section class="intro">
-    <h1>Welcome to Fast Food!</h1>
-    <p>
-      Discover a curated menu of delicious food items tailored to your dietary preferences.
-      Whether you're vegan 🌱, lactose-intolerant 🥛, or just hungry 🍔, we've got something for you.
-      Use the filters below to find your perfect meal!
-    </p>
-  </section>
+  <!-- LOGIN PAGE (fullscreen image background) -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-overlay"></div>
 
-  <section class="icon-legend">
-    <h3>What Do the Icons Mean?</h3>
-    <ul>
-      <li><span class="icon">🌶️</span> Spiciness level (1–5)</li>
-      <li><span class="icon">🥛</span> Contains dairy</li>
-      <li><span class="icon">🥦</span> Vegan-friendly</li>
-      <li><span class="icon">✅</span> Gluten Free</li>
-    </ul>
-  </section>
-
-  <div class="container">
-    <div class="section">
-      <label for="profile">Choose your dietary profile:</label>
-      <select id="profile" onchange="showRecommendations()">
-        <option value="none">None</option>
-        <option value="vegan">Vegan</option>
-        <option value="lactoseIntolerant">Lactose Intolerant</option>
-      </select>
+    <div class="login-box">
+      <h1>Welcome to Fast Food!</h1>
+      <h2>Login</h2>
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" placeholder="you@example.com" required>
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" required>
+      <button onclick="login()">Login</button>
     </div>
+  </div>
 
-    <div class="section">
-      <h2>Search Your Menu Items</h2>
-      <input type="text" id="searchInput" placeholder="Search for food..." oninput="searchMenuItems()" />
-    </div>
+  <!-- MAIN APP -->
+  <div id = "main-content" style="display:none;">
+    <header>Fast Food</header>
 
-    <div class="section">
-      <h2><br>Filter Your Menu Items</h2>
-      <button onclick="showVeganItems()">🌱 List Vegan Items</button>
-      <button onclick="showLowCalItems()">🔥 Under 300 Calories</button>
-      <button onclick="showDairyFreeItems()">🥛 No Dairy Items</button>
-    </div>
-    
-    <div class="section">
-      <div id="menu-list" class="menu-grid"></div>
-    </div>
+    <section class="intro">
+      <div class="intro-video-wrapper">
+        <video autoplay muted loop playsinline class="intro-video">
+          <source src="burger.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+      </div>
+      <div class="intro-content">
+        <h1>Welcome to Fast Food!</h1>
+      </div>
+    </section>
 
-    <div class="section">
-      <h2>Recommended For You</h2>
-      <div id="recommendation-list" class="menu-grid"></div>
-    </div>
+    <section class="icon-legend">
+      <h3>What Do the Icons Mean?</h3>
+      <ul>
+        <li><span class="icon">🌶️</span> Spiciness level (1–5)</li>
+        <li><span class="icon">🥛</span> Contains dairy</li>
+        <li><span class="icon">🥦</span> Vegan-friendly</li>
+        <li><span class="icon">✅</span> Gluten Free</li>
+      </ul>
+    </section>
 
-    <div class="section">
-      <h2>Order</h2>
-      <div class="order-row">
-        <button onclick="validateOrder()">✅ Validate Order</button>
-        <p id="validation-result"></p>
+    <div class="container">
+      <div class="section">
+        <label for="profile">Choose your dietary profile:</label>
+        <select id="profile" onchange="showRecommendations()">
+          <option value="none">None</option>
+          <option value="vegan">Vegan</option>
+          <option value="lactoseIntolerant">Lactose Intolerant</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <h2>Search Your Menu Items</h2>
+        <input type="text" id="searchInput" placeholder="Search for food..." oninput="searchMenuItems()" />
+      </div>
+
+      <div class="section">
+        <h2><br>Filter Your Menu Items</h2>
+        <button onclick="showVeganItems()">🌱 List Vegan Items</button>
+        <button onclick="showLowCalItems()">🔥 Under 300 Calories</button>
+        <button onclick="showDairyFreeItems()">🥛 No Dairy Items</button>
+      </div>
+      
+      <div class="section">
+        <div id="menu-list" class="menu-grid"></div>
+      </div>
+
+      <div class="section">
+        <h2>Recommended For You</h2>
+        <div id="recommendation-list" class="menu-grid"></div>
+      </div>
+
+      <div class="section">
+        <h2>Order</h2>
+        <div class="order-row">
+          <button onclick="validateOrder()">✅ Validate Order</button>
+          <p id="validation-result"></p>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- SCRIPT -->
   <script>
+    // Login logic
+    function login() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      if (email && password) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+      } else {
+        alert("Please enter both email and password.");
+      }
+    }
+
+    // RDF & menu logic
     const store = $rdf.graph();
     const ns = $rdf.Namespace("http://example.org/menu#");
     const RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
