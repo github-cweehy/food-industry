@@ -69,9 +69,6 @@
 
   <script>
     const store = $rdf.graph();
-    const fetcher = new $rdf.Fetcher(store, { fetch: window.fetch.bind(window) });
-    const menuURL = new URL("menu.ttl", window.location.href).href;
-
     const ns = $rdf.Namespace("http://example.org/menu#");
     const RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 
@@ -80,9 +77,33 @@
     let selectedItems = [];
     let allItems = [];
 
-    fetcher.load(menuURL).then(() => {
-      allItems = store.each(undefined, RDF("type"), ns("FoodItem"));
-      showRecommendations();
+    fetch("menu.xml")
+      .then(res => res.text())
+      .then(xmlStr => new DOMParser().parseFromString(xmlStr, "text/xml"))
+      .then(xml => {
+        const items = xml.querySelectorAll("item");
+        items.forEach(item => {
+          const name = item.querySelector("name").textContent;
+          const cal = parseInt(item.querySelector("calories").textContent);
+          const spicy = parseInt(item.querySelector("spicyLevel").textContent);
+          const subject = ns(name.replace(/\s+/g, ""));
+
+          store.add(subject, RDF("type"), ns("FoodItem"));
+          store.add(subject, ns("name"), $rdf.literal(name));
+          store.add(subject, ns("calories"), $rdf.literal(cal, undefined, $rdf.NamedNode.fromValue("http://www.w3.org/2001/XMLSchema#int")));
+          store.add(subject, ns("spicyLevel"), $rdf.literal(spicy, undefined, $rdf.NamedNode.fromValue("http://www.w3.org/2001/XMLSchema#int")));
+
+          item.querySelectorAll("ingredient").forEach(ing => {
+            store.add(subject, ns("hasIngredient"), ns(ing.textContent));
+          });
+          item.querySelectorAll("tag").forEach(tag => {
+            store.add(subject, ns("dietTag"), ns(tag.textContent));
+          });
+        });
+
+        // After loading and parsing XML to RDF
+        allItems = store.each(undefined, RDF("type"), ns("FoodItem"));
+        showRecommendations();
     });
 
     function renderMenu(items) {
@@ -96,7 +117,7 @@
         const tags = store.each(item, ns("dietTag"));
         const hasCheese = store.any(item, ns("hasIngredient"), ns("Cheese"));
 
-        const ingText = ingredients.map(i => i.value.split("#")[1]).join(", ");
+        const ingText = [...new Set(ingredients.map(i => i.value.split("#")[1]))].join(", ");
         const fileName = name?.value.toLowerCase().replace(/ /g, "").replace(/[^a-z0-9]/g, "") + ".jpg";
         const imageUrl = `image/${fileName}`;
 
@@ -106,8 +127,11 @@
           const level = Math.min(parseInt(spice.value), 5);
           iconTagsArr.push("🌶️".repeat(level));
         }
-        if (tags.some(t => t.value.endsWith("containsDairy"))) iconTagsArr.push("🥛");
-        if (tags.some(t => t.value.endsWith("vegan"))) iconTagsArr.push("🥦");
+        const tagSet = new Set(tags.map(t => t.value.split("#")[1]));
+
+        if (tagSet.has("containsDairy")) iconTagsArr.push("🥛");
+        if (tagSet.has("vegan")) iconTagsArr.push("🥦");
+        if (tagSet.has("glutenFree")) iconTagsArr.push("✅");
 
         const iconTags = iconTagsArr.join(" ");
 
